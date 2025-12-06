@@ -22,7 +22,7 @@ const emergencyContacts = [
 ];
 
 // Correct backend endpoint
-const BACKEND_URL = "https://women-backend.onrender.com/send-alert";
+const BACKEND_URL = "https://women-backend.onrender.com/api/emergency";
 
 let trackedPath = [];
 let watchId = null;
@@ -111,3 +111,4 @@ document.addEventListener("DOMContentLoaded", () => {
     startTracking();
   });
 });
+
