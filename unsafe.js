@@ -22,7 +22,7 @@ const emergencyContacts = [
 ];
 
 // Correct backend endpoint
-const BACKEND_URL = "https://sheshield-umul.onrender.com/api/emergency";
+const BACKEND_URL = "https://sheshield-umu1.onrender.com/api/emergency";
 
 let trackedPath = [];
 let watchId = null;
@@ -111,3 +111,4 @@ document.addEventListener("DOMContentLoaded", () => {
     startTracking();
   });
 });
+
