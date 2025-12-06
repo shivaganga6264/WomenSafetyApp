@@ -50,8 +50,8 @@ function startTracking() {
     },
     {
       enableHighAccuracy: true,
-      maximumAge: 0,
-      timeout: 10000
+      maximumAge: ,5000
+      timeout: 30000
     }
   );
 }
@@ -111,4 +111,5 @@ document.addEventListener("DOMContentLoaded", () => {
     startTracking();
   });
 });
+
 
