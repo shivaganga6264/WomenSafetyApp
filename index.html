@@ -99,16 +99,14 @@
       margin-top: 15px;
     }
   </style>
-  <script
-    src="https://kit.fontawesome.com/a076d05399.js"
-    crossorigin="anonymous"
-  ></script>
-  
+
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </head>
+
 <body>
 
   <div class="login-container">
-    <img src="women1.jpg" alt="Women Safety Logo" /">
+    <img src="women1.jpg" alt="Women Safety Logo" />
     <h1>Welcome</h1>
     <h4>Login to your create account</h4>
 
@@ -131,20 +129,22 @@
     <p id="message"></p>
   </div>
 
-  <!-- Firebase Auth & Unsafe Button -->
   <script type="module" src="./auth.js"></script>
-  <!--script type="module" src="./unsafe.js"></script>-->
+  <script type="module" src="./unsafe-v2.js"></script>
+
   <script>
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker
-      .register("service-worker.js")
-      .then(() => console.log("✅ Service Worker Registered"))
-      .catch((err) => console.log("❌ Service Worker Error", err));
-  }
-</script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register("./service-worker.js")
+        .then(() => console.log("✅ Service Worker Registered"))
+        .catch((err) => console.log("❌ Service Worker Error", err));
+    }
+  </script>
 
 </body>
 </html>
+
+
 
 
 
