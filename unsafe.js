@@ -1,76 +1,139 @@
-  import { auth, db } from "./firebase.js";
+// -------------------------
+// IMPORTS
+// -------------------------
+import { auth, db } from "./firebase.js";
 import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
+// -------------------------
+// BACKEND API
+// -------------------------
 const BACKEND_URL = "https://sheshield-umu1.onrender.com/api/emergency";
 
-// Save user location
+
+// -------------------------
+// SAVE USER LOCATION TO FIRESTORE
+// -------------------------
 async function saveUserLocation(lat, lon) {
   const user = auth.currentUser;
+
   if (!user) {
-    console.log("User not logged in");
+    console.log("❌ Cannot save location (User not logged in)");
     return;
   }
 
- await setDoc(
-  doc(db, "usersLocation", user.uid),
-  {
-    userId: user.uid,
-    latitude: lat,
-    longitude: lon,
-    phoneNumber: "+919133042642",
-    timestamp: new Date().toISOString()
-  },
-  { merge: true }  // DO NOT remove this!
-);
+  await setDoc(
+    doc(db, "usersLocation", user.uid),
+    {
+      userId: user.uid,
+      latitude: lat,
+      longitude: lon,
+      phoneNumber: "+919133042642",   // Your phone number
+      timestamp: new Date().toISOString()
+    },
+    { merge: true }
+  );
 
-console.log("Location updated:", lat, lon);
+  console.log("📍 Location updated:", lat, lon);
 }
 
-// Start tracking
+
+// -------------------------
+// START CONTINUOUS TRACKING
+// -------------------------
 function startTracking() {
   if (!navigator.geolocation) {
-    alert("Geolocation not supported");
+    alert("Geolocation not supported in this browser.");
     return;
   }
+
+  console.log("📡 Starting live location tracking...");
 
   navigator.geolocation.watchPosition(
     (pos) => {
-      saveUserLocation(pos.coords.latitude, pos.coords.longitude);
+      const lat = pos.coords.latitude;
+      const lon = pos.coords.longitude;
+
+      console.log("▶ Live location:", lat, lon);
+      saveUserLocation(lat, lon);
     },
-    (err) => console.error(err),
+    (err) => console.error("⚠ Location tracking error:", err),
     { enableHighAccuracy: true }
   );
 }
 
+
+// -------------------------
+// UNSAFE BUTTON HANDLER
+// -------------------------
 document.addEventListener("DOMContentLoaded", () => {
+  console.log("🚀 unsafe.js loaded into page");
 
   startTracking();
 
   const unsafeBtn = document.getElementById("unsafeBtn");
-  if (!unsafeBtn) return;
+  if (!unsafeBtn) {
+    console.error("❌ ERROR: unsafeBtn not found in dashboard.html");
+    return;
+  }
 
   unsafeBtn.addEventListener("click", async () => {
-    const pos = await new Promise((resolve, reject) =>
-      navigator.geolocation.getCurrentPosition(resolve, reject)
-    );
+    console.log("🛑 UNSAFE BUTTON CLICKED!");
 
+    // 1️⃣ Get location
+    let pos;
+    try {
+      pos = await new Promise((resolve, reject) =>
+        navigator.geolocation.getCurrentPosition(resolve, reject)
+      );
+    } catch (err) {
+      console.error("❌ Failed to fetch current location");
+      alert("Location access denied");
+      return;
+    }
+
+    const lat = pos.coords.latitude;
+    const lon = pos.coords.longitude;
+    console.log("📍 Emergency Location:", lat, lon);
+
+    // 2️⃣ Check user login
     const user = auth.currentUser;
-    if (!user) return alert("Not logged in");
+    if (!user) {
+      console.log("❌ User not logged in");
+      alert("You must log in first!");
+      return;
+    }
 
-    const response = await fetch(BACKEND_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        latitude: pos.coords.latitude,
-        longitude: pos.coords.longitude,
-        uid: user.uid
-      })
-    });
+    console.log("👤 UID:", user.uid);
 
-    alert(await response.text());
+    // 3️⃣ Build payload
+    const payload = {
+      latitude: lat,
+      longitude: lon,
+      uid: user.uid
+    };
+
+    console.log("📦 Sending Payload:", payload);
+
+    // 4️⃣ Send to backend
+    try {
+      const response = await fetch(BACKEND_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.text();
+      console.log("📥 Backend reply:", result);
+      alert(result);
+
+    } catch (error) {
+      console.error("❌ Backend connection error:", error);
+      alert("Failed to contact emergency service.");
+    }
   });
-
 });
+
+
 
 
 
