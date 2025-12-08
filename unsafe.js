@@ -11,14 +11,19 @@ async function saveUserLocation(lat, lon) {
     return;
   }
 
-  await setDoc(doc(db, "usersLocation", user.uid), {
+ await setDoc(
+  doc(db, "usersLocation", user.uid),
+  {
     userId: user.uid,
     latitude: lat,
     longitude: lon,
+    phoneNumber: "+919133042642",
     timestamp: new Date().toISOString()
-  });
+  },
+  { merge: true }  // DO NOT remove this!
+);
 
-  console.log("Location updated:", lat, lon);
+console.log("Location updated:", lat, lon);
 }
 
 // Start tracking
@@ -66,6 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 });
+
 
 
 
