@@ -1,11 +1,10 @@
- // ---- IMPORTS ----
-import { auth, db } from "./firebase.js";
+ import { auth, db } from "./firebase.js";
 import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
 // Backend URL
 const BACKEND_URL = "https://sheshield-umu1.onrender.com/api/emergency";
 
-// ⭐ Save latest user location to Firestore
+// ⭐ Save latest user location
 async function saveUserLocation(lat, lon) {
   const user = auth.currentUser;
 
@@ -18,14 +17,13 @@ async function saveUserLocation(lat, lon) {
     userId: user.uid,
     latitude: lat,
     longitude: lon,
-    timestamp: new Date().toISOString(),
-    phoneNumber: "+911234567890"  // Replace with real number
+    timestamp: new Date().toISOString()
   });
 
   console.log("User location updated:", lat, lon);
 }
 
-// ⭐ Start tracking user continuously
+// ⭐ Track user continuously
 let watchId = null;
 
 function startTracking() {
@@ -48,7 +46,6 @@ function startTracking() {
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  // Start tracking immediately
   startTracking();
 
   const unsafeBtn = document.getElementById("unsafeBtn");
@@ -96,6 +93,8 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   });
 });
+
+
 
 
 
