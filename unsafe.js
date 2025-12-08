@@ -1,9 +1,26 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+ import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
-import { doc, setDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
-import { auth } from "./firebase.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+import { auth as authInstance } from "./firebase.js";
 
-// Save user's latest location to Firestore for radius search
+// Initialize Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyCVsTNfI-nlaKqx7BxEVSoU9E7qtdJc5Mw",
+  authDomain: "women-safety-b01ae.firebaseapp.com",
+  projectId: "women-safety-b01ae",
+  storageBucket: "women-safety-b01ae.appspot.com",
+  messagingSenderId: "185083347571",
+  appId: "1:185083347571:web:6776fc6f294b3912a5e006",
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth();
+const db = getFirestore();
+
+// Backend URL
+const BACKEND_URL = "https://sheshield-umu1.onrender.com/api/emergency";
+
+// ⭐ Save user's latest location to Firestore
 async function saveUserLocation(lat, lon) {
   const user = auth.currentUser;
   if (!user) {
@@ -18,28 +35,47 @@ async function saveUserLocation(lat, lon) {
     timestamp: new Date().toISOString()
   });
 
-  console.log("User location updated");
+  console.log("User location updated:", lat, lon);
 }
 
+// ⭐ Start tracking user continuously
+let watchId = null;
 
-const firebaseConfig = {
-  apiKey: "AIzaSyCVsTNfI-nlaKqx7BxEVSoU9E7qtdJc5Mw",
-  authDomain: "women-safety-b01ae.firebaseapp.com",
-  projectId: "women-safety-b01ae",
-  storageBucket: "women-safety-b01ae.appspot.com",
-  messagingSenderId: "185083347571",
-  appId: "1:185083347571:web:6776fc6f294b3912a5e006",
-};
+function startTracking() {
+  if (!navigator.geolocation) {
+    alert("Geolocation not supported.");
+    return;
+  }
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth();
+  watchId = navigator.geolocation.watchPosition(
+    (position) => {
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
 
-// Correct backend endpoint
-const BACKEND_URL = "https://sheshield-umu1.onrender.com/api/emergency";
+      console.log("Tracking location:", lat, lon);
+
+      // Save current location
+      saveUserLocation(lat, lon);
+    },
+    (err) => {
+      console.error("Tracking error:", err);
+    },
+    {
+      enableHighAccuracy: true,
+      maximumAge: 5000,
+      timeout: 30000
+    }
+  );
+}
 
 document.addEventListener("DOMContentLoaded", () => {
+
+  // ⭐ Start continuous tracking immediately after page load
+  startTracking();
+
   const unsafeBtn = document.getElementById("unsafeBtn");
 
+  // When user clicks unsafe button → send emergency alert
   unsafeBtn.addEventListener("click", () => {
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
@@ -67,6 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           const msg = await res.text();
           alert(msg);
+
         } catch (err) {
           console.error("Backend error:", err);
           alert("Failed to send emergency alert.");
@@ -77,6 +114,8 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   });
 });
+
+
 
 
 
