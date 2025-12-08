@@ -1,5 +1,26 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+import { doc, setDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+import { auth } from "./firebase.js";
+
+// Save user's latest location to Firestore for radius search
+async function saveUserLocation(lat, lon) {
+  const user = auth.currentUser;
+  if (!user) {
+    console.log("User not logged in");
+    return;
+  }
+
+  await setDoc(doc(db, "usersLocation", user.uid), {
+    userId: user.uid,
+    latitude: lat,
+    longitude: lon,
+    timestamp: new Date().toISOString()
+  });
+
+  console.log("User location updated");
+}
+
 
 const firebaseConfig = {
   apiKey: "AIzaSyCVsTNfI-nlaKqx7BxEVSoU9E7qtdJc5Mw",
@@ -56,6 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   });
 });
+
 
 
 
