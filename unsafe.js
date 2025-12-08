@@ -1,11 +1,6 @@
  // ---- IMPORTS ----
-import { auth } from "./firebase.js";
-import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
-import { getApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-
-// Use already initialized Firebase App (from firebase.js)
-const app = getApp();
-const db = getFirestore(app);
+import { auth, db } from "./firebase.js";
+import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
 // Backend URL
 const BACKEND_URL = "https://sheshield-umu1.onrender.com/api/emergency";
@@ -24,7 +19,7 @@ async function saveUserLocation(lat, lon) {
     latitude: lat,
     longitude: lon,
     timestamp: new Date().toISOString(),
-    phoneNumber: "+911234567890"  // ADD your number (temporary)
+    phoneNumber: "+911234567890"  // Replace with real number
   });
 
   console.log("User location updated:", lat, lon);
@@ -43,10 +38,7 @@ function startTracking() {
     (position) => {
       const lat = position.coords.latitude;
       const lon = position.coords.longitude;
-
       console.log("Tracking location:", lat, lon);
-
-      // Save location continuously
       saveUserLocation(lat, lon);
     },
     (err) => console.error("Tracking error:", err),
@@ -61,7 +53,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const unsafeBtn = document.getElementById("unsafeBtn");
 
-  // If button missing → don't crash
   if (!unsafeBtn) {
     console.error("unsafeBtn not found in HTML");
     return;
@@ -105,6 +96,8 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   });
 });
+
+
 
 
 
