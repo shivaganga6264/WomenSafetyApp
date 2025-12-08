@@ -1,44 +1,34 @@
- import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
-import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
-import { auth as authInstance } from "./firebase.js";
+ // ---- IMPORTS ----
+import { auth } from "./firebase.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+import { getApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
 
-// Initialize Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyCVsTNfI-nlaKqx7BxEVSoU9E7qtdJc5Mw",
-  authDomain: "women-safety-b01ae.firebaseapp.com",
-  projectId: "women-safety-b01ae",
-  storageBucket: "women-safety-b01ae.appspot.com",
-  messagingSenderId: "185083347571",
-  appId: "1:185083347571:web:6776fc6f294b3912a5e006",
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth();
-const db = getFirestore();
+// Use already initialized Firebase App (from firebase.js)
+const app = getApp();
+const db = getFirestore(app);
 
 // Backend URL
 const BACKEND_URL = "https://sheshield-umu1.onrender.com/api/emergency";
 
-// ⭐ Save user's latest location to Firestore
- async function saveUserLocation(lat, lon) {
+// ⭐ Save latest user location to Firestore
+async function saveUserLocation(lat, lon) {
   const user = auth.currentUser;
+
   if (!user) {
     console.log("User not logged in");
     return;
   }
 
-  await setDoc(doc(db, "users-locations", user.uid), {   // FIXED HERE
+  await setDoc(doc(db, "usersLocation", user.uid), {
     userId: user.uid,
     latitude: lat,
     longitude: lon,
-    phoneNumber: "+91XXXXXXXXXX", // OPTIONAL (we will update in Step 4)
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    phoneNumber: "+911234567890"  // ADD your number (temporary)
   });
 
   console.log("User location updated:", lat, lon);
 }
-
 
 // ⭐ Start tracking user continuously
 let watchId = null;
@@ -56,28 +46,27 @@ function startTracking() {
 
       console.log("Tracking location:", lat, lon);
 
-      // Save current location
+      // Save location continuously
       saveUserLocation(lat, lon);
     },
-    (err) => {
-      console.error("Tracking error:", err);
-    },
-    {
-      enableHighAccuracy: true,
-      maximumAge: 5000,
-      timeout: 30000
-    }
+    (err) => console.error("Tracking error:", err),
+    { enableHighAccuracy: true, maximumAge: 5000, timeout: 30000 }
   );
 }
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  // ⭐ Start continuous tracking immediately after page load
+  // Start tracking immediately
   startTracking();
 
   const unsafeBtn = document.getElementById("unsafeBtn");
 
-  // When user clicks unsafe button → send emergency alert
+  // If button missing → don't crash
+  if (!unsafeBtn) {
+    console.error("unsafeBtn not found in HTML");
+    return;
+  }
+
   unsafeBtn.addEventListener("click", () => {
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
@@ -90,7 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
-        console.log("Sending emergency request:", { lat, lon, uid: user.uid });
+        console.log("Sending emergency:", { lat, lon, uid: user.uid });
 
         try {
           const res = await fetch(BACKEND_URL, {
@@ -116,6 +105,8 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   });
 });
+
+
 
 
 
