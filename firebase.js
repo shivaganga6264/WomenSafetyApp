@@ -1,106 +1,26 @@
- // ---- IMPORTS ----
-import { auth } from "./firebase.js";
-import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
-import { getApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+  // Import Firebase SDK
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
-// Use already initialized Firebase App
-const app = getApp();
+// Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyCVsTNfI-nlaKqx7BxEVSoU9E7qtdJc5Mw",
+  authDomain: "women-safety-b01ae.firebaseapp.com",
+  projectId: "women-safety-b01ae",
+  storageBucket: "women-safety-b01ae.firebasestorage.app",
+  messagingSenderId: "185083347571",
+  appId: "1:185083347571:web:6776fc6f294b3912a5e006"
+};
+
+// Initialize app only once
+const app = initializeApp(firebaseConfig);
+
+// Create auth + Firestore
+const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Backend URL
-const BACKEND_URL = "https://sheshield-umu1.onrender.com/api/emergency";
+// Export to use in other files
+export { auth, db };
 
-// ⭐ Save latest user location to Firestore
-async function saveUserLocation(lat, lon) {
-  const user = auth.currentUser;
 
-  if (!user) {
-    console.log("User not logged in");
-    return;
-  }
-
-  await setDoc(doc(db, "usersLocation", user.uid), {
-    userId: user.uid,
-    latitude: lat,
-    longitude: lon,
-    timestamp: new Date().toISOString()
-  });
-
-  console.log("User location updated:", lat, lon);
-}
-
-// ⭐ Start tracking user continuously
-let watchId = null;
-
-function startTracking() {
-  if (!navigator.geolocation) {
-    alert("Geolocation not supported.");
-    return;
-  }
-
-  watchId = navigator.geolocation.watchPosition(
-    (position) => {
-      const lat = position.coords.latitude;
-      const lon = position.coords.longitude;
-
-      console.log("Tracking location:", lat, lon);
-
-      // Save location continuously
-      saveUserLocation(lat, lon);
-    },
-    (err) => console.error("Tracking error:", err),
-    { enableHighAccuracy: true, maximumAge: 5000, timeout: 30000 }
-  );
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-
-  // Start tracking immediately
-  startTracking();
-
-  const unsafeBtn = document.getElementById("unsafeBtn");
-
-  // If button is missing → stop error
-  if (!unsafeBtn) {
-    console.error("unsafeBtn not found in HTML");
-    return;
-  }
-
-  unsafeBtn.addEventListener("click", () => {
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const lat = pos.coords.latitude;
-        const lon = pos.coords.longitude;
-
-        const user = auth.currentUser;
-        if (!user) {
-          alert("User not logged in.");
-          return;
-        }
-
-        console.log("Sending emergency:", { lat, lon, uid: user.uid });
-
-        try {
-          const res = await fetch(BACKEND_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              latitude: lat,
-              longitude: lon,
-              uid: user.uid
-            })
-          });
-
-          const msg = await res.text();
-          alert(msg);
-
-        } catch (err) {
-          console.error("Backend error:", err);
-          alert("Failed to send emergency alert.");
-        }
-      },
-      () => alert("Please allow location access"),
-      { enableHighAccuracy: true }
-    );
-  });
-});
