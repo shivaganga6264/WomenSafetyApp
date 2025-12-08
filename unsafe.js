@@ -21,22 +21,24 @@ const db = getFirestore();
 const BACKEND_URL = "https://sheshield-umu1.onrender.com/api/emergency";
 
 // ⭐ Save user's latest location to Firestore
-async function saveUserLocation(lat, lon) {
+ async function saveUserLocation(lat, lon) {
   const user = auth.currentUser;
   if (!user) {
     console.log("User not logged in");
     return;
   }
 
-  await setDoc(doc(db, "usersLocation", user.uid), {
+  await setDoc(doc(db, "users-locations", user.uid), {   // FIXED HERE
     userId: user.uid,
     latitude: lat,
     longitude: lon,
+    phoneNumber: "+91XXXXXXXXXX", // OPTIONAL (we will update in Step 4)
     timestamp: new Date().toISOString()
   });
 
   console.log("User location updated:", lat, lon);
 }
+
 
 // ⭐ Start tracking user continuously
 let watchId = null;
@@ -114,6 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   });
 });
+
 
 
 
