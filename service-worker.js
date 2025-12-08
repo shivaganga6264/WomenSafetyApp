@@ -1,11 +1,11 @@
 const CACHE_NAME = 'safety-app-v4';
 
 const urlsToCache = [
-  '/WomenSafetyApp/',
-  '/WomenSafetyApp/index.html',
-  '/WomenSafetyApp/manifest.json',
-  '/WomenSafetyApp/icon-192.png',
-  '/WomenSafetyApp/icon-512.png'
+  './',
+  './index.html',
+  './manifest.json',
+  './icon-192.png',
+  './icon-512.png'
 ];
 
 // Install event
@@ -36,12 +36,12 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const reqUrl = new URL(event.request.url);
 
-  // Skip backend API
-  if (reqUrl.pathname.includes('/send-alert')) {
+  // Skip backend API calls
+  if (reqUrl.pathname.includes('/api/emergency')) {
     return;
   }
 
-  // Skip external domains
+  // Skip external resources
   if (reqUrl.origin !== self.location.origin) {
     return;
   }
@@ -58,5 +58,7 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
+
 
 
