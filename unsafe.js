@@ -1,24 +1,5 @@
-import { auth, db } from "./firebase.js";
+ import { auth, db } from "./firebase.js";
 import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
-
-// -------------------------
-// STEP 0: SAVE PHONE NUMBER WHEN USER LOGS IN
-// -------------------------
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    console.log("✅ User logged in:", user.uid);
-
-    // Save phone number into Firestore ONLY once
-    await setDoc(
-      doc(db, "usersLocation", user.uid),
-      { phoneNumber: "+919133042642" },   // ← YOUR number here
-      { merge: true }
-    );
-
-    console.log("📞 Phone number saved in Firestore!");
-  }
-});
 
 // -------------------------
 // BACKEND API
@@ -37,12 +18,20 @@ async function saveUserLocation(lat, lon) {
     return;
   }
 
+  // ⭐ Get phone number stored during login
+  let phoneNumber = localStorage.getItem("phoneNumber");
+
+  if (!phoneNumber) {
+    console.log("❌ No phone number found in localStorage");
+  }
+
   await setDoc(
     doc(db, "usersLocation", user.uid),
     {
       userId: user.uid,
-      latitude: lat,
-      longitude: lon,
+      latitude: Number(lat),     // ⭐ FIX: save as number
+      longitude: Number(lon),    // ⭐ FIX: save as number
+      phoneNumber: phoneNumber,
       timestamp: new Date().toISOString()
     },
     { merge: true }
@@ -122,8 +111,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 3️⃣ Build payload
     const payload = {
-      latitude: lat,
-      longitude: lon,
+      latitude: Number(lat),   // ⭐ FIX
+      longitude: Number(lon),  // ⭐ FIX
       uid: user.uid
     };
 
@@ -147,6 +136,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
+
 
 
 
