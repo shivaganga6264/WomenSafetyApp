@@ -1,6 +1,3 @@
-// -------------------------
-// IMPORTS
-// -------------------------
 import { auth, db } from "./firebase.js";
 import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
@@ -21,13 +18,20 @@ async function saveUserLocation(lat, lon) {
     return;
   }
 
+  // ⭐ Get phone number stored during login
+  const phoneNumber = localStorage.getItem("phoneNumber");
+
+  if (!phoneNumber) {
+    console.log("❌ No phone number found in localStorage");
+  }
+
   await setDoc(
     doc(db, "usersLocation", user.uid),
     {
       userId: user.uid,
       latitude: lat,
       longitude: lon,
-      phoneNumber: "+919133042642",   // Your phone number
+      phoneNumber: phoneNumber,  // ⭐ FIXED: dynamic phone number
       timestamp: new Date().toISOString()
     },
     { merge: true }
@@ -132,6 +136,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
+
+
 
 
 
