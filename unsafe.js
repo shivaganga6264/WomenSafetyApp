@@ -1,62 +1,55 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+ import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
 import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
-// Firebase config
+// FIREBASE CONFIG
 const firebaseConfig = {
   apiKey: "AIzaSyCVsTNfI-nlaKqx7BxEVSoU9E7qtdJc5Mw",
   authDomain: "women-safety-b01ae.firebaseapp.com",
   projectId: "women-safety-b01ae",
   storageBucket: "women-safety-b01ae.appspot.com",
   messagingSenderId: "185083347571",
-  appId: "1:185083347571:web:6776fc6f294b3912a5e006",
+  appId: "1:185083347571:web:6776fc6f294b3912a5e006"
 };
 
+// INIT FIREBASE
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Emergency contacts
+// EMERGENCY CONTACTS (FIXED)
 const emergencyContacts = [
   "+919014974693",
-  //"+919381842856",
-  //"+919133042642"
+  "+919381842856",
+  "+919133042642"
 ];
 
-// Correct backend endpoint
+// BACKEND URL
 const BACKEND_URL = "https://sheshield-umu1.onrender.com/api/emergency";
 
+// TRACKED PATH
 let trackedPath = [];
 let watchId = null;
 
-// Start continuous tracking
+// START LOCATION TRACKING
 function startTracking() {
   if (!navigator.geolocation) {
-    alert("Geolocation not supported.");
+    alert("Geolocation not supported");
     return;
   }
 
   watchId = navigator.geolocation.watchPosition(
-    async (position) => {
-      const point = {
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
+    (pos) => {
+      trackedPath.push({
+        latitude: pos.coords.latitude,
+        longitude: pos.coords.longitude,
         timestamp: new Date().toISOString()
-      };
-
-      trackedPath.push(point);
-      console.log("Tracking point:", point);
+      });
     },
-    (err) => {
-      console.error("Tracking error:", err);
-    },
-    {
-      enableHighAccuracy: true,
-      maximumAge: 5000,
-      timeout: 30000 
-    }
+    (err) => console.error("Tracking error:", err),
+    { enableHighAccuracy: true }
   );
 }
 
-// Stop tracking
+// STOP TRACKING
 function stopTracking() {
   if (watchId !== null) {
     navigator.geolocation.clearWatch(watchId);
@@ -64,31 +57,32 @@ function stopTracking() {
   }
 }
 
+// BUTTON HANDLER
 document.addEventListener("DOMContentLoaded", () => {
   startTracking();
 
   const unsafeBtn = document.getElementById("unsafeBtn");
+  if (!unsafeBtn) return;
 
   unsafeBtn.addEventListener("click", async () => {
     stopTracking();
 
     if (trackedPath.length === 0) {
-      alert("No path tracked yet.");
+      alert("No location tracked yet");
       return;
     }
 
-    // Save full path to Firestore
+    // SAVE PATH TO FIRESTORE (OPTIONAL)
     try {
       await addDoc(collection(db, "unsafePaths"), {
         path: trackedPath,
-        timestamp: new Date().toISOString()
+        timestamp: new Date()
       });
-      console.log("Full path saved to Firestore");
-    } catch (err) {
-      console.error("Firestore save error:", err);
+    } catch (e) {
+      console.error("Firestore error:", e);
     }
 
-    // Send emergency alert to backend
+    // SEND TO BACKEND
     try {
       const response = await fetch(BACKEND_URL, {
         method: "POST",
@@ -99,18 +93,21 @@ document.addEventListener("DOMContentLoaded", () => {
         })
       });
 
-      const text = await response.text();
-      alert(text);
+      const msg = await response.text();
+      alert(msg);
     } catch (err) {
-      console.error("Backend error:", err);
-      alert("Failed to send emergency alert.");
+      alert("Emergency service failed");
+      console.error(err);
     }
 
-    // Clear and restart tracking
+    // RESET
     trackedPath = [];
     startTracking();
   });
 });
+
+ 
+
 
 
 
