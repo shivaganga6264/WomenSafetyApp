@@ -17,8 +17,8 @@ const db = getFirestore(app);
 // Emergency contacts
 const emergencyContacts = [
   "+919014974693",
-  "+919381842856",
-  "+919133042642"
+  //"+919381842856",
+  //"+919133042642"
 ];
 
 // Correct backend endpoint
@@ -111,6 +111,7 @@ document.addEventListener("DOMContentLoaded", () => {
     startTracking();
   });
 });
+
 
 
 
