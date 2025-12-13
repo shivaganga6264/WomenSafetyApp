@@ -1,4 +1,4 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+ import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
 import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
 /* -------------------------
@@ -17,7 +17,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 /* -------------------------
-   EMERGENCY CONTACTS
+   CONTACTS
 ------------------------- */
 const emergencyContacts = [
   "+919014974693",
@@ -26,9 +26,10 @@ const emergencyContacts = [
 ];
 
 /* -------------------------
-   BACKEND URL
+   BACKEND URLs
 ------------------------- */
-const BACKEND_URL = "https://sheshield-umu1.onrender.com/api/emergency";
+const EMERGENCY_URL = "https://sheshield-umu1.onrender.com/api/emergency";
+const CHILD_HELP_URL = "https://sheshield-umu1.onrender.com/api/childhelp";
 
 /* -------------------------
    TRACKING VARIABLES
@@ -45,25 +46,16 @@ function startTracking() {
     return;
   }
 
-  console.log("📡 Starting live location tracking...");
-
   watchId = navigator.geolocation.watchPosition(
     (pos) => {
-      const point = {
+      trackedPath.push({
         latitude: pos.coords.latitude,
         longitude: pos.coords.longitude,
         timestamp: new Date().toISOString()
-      };
-
-      trackedPath.push(point);
-      console.log("📍 Live location:", point.latitude, point.longitude);
+      });
     },
     (err) => console.error("Location error:", err),
-    {
-      enableHighAccuracy: true,
-      maximumAge: 5000,
-      timeout: 30000
-    }
+    { enableHighAccuracy: true }
   );
 }
 
@@ -81,13 +73,10 @@ function stopTracking() {
    PAGE LOAD
 ------------------------- */
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("🚀 unsafe.js loaded");
   startTracking();
 
-  const unsafeBtn = document.getElementById("unsafeBtn");
-
-  unsafeBtn.addEventListener("click", async () => {
-    console.log("🛑 UNSAFE BUTTON CLICKED");
+  /* ===== UNSAFE BUTTON ===== */
+  document.getElementById("unsafeBtn").addEventListener("click", async () => {
     stopTracking();
 
     if (trackedPath.length === 0) {
@@ -95,22 +84,14 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    /* OPTIONAL: SAVE PATH TO FIRESTORE */
-    try {
-      await addDoc(collection(db, "unsafePaths"), {
-        path: trackedPath,
-        timestamp: new Date().toISOString()
-      });
-      console.log("✅ Path saved to Firestore");
-    } catch (err) {
-      console.error("Firestore error:", err);
-    }
+    // Save path (optional)
+    await addDoc(collection(db, "unsafePaths"), {
+      path: trackedPath,
+      timestamp: new Date().toISOString()
+    });
 
-    /* SEND TO BACKEND */
     try {
-      console.log("📤 Sending emergency alert");
-
-      const response = await fetch(BACKEND_URL, {
+      const res = await fetch(EMERGENCY_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -119,12 +100,36 @@ document.addEventListener("DOMContentLoaded", () => {
         })
       });
 
-      const text = await response.text();
-      alert(text);
+      alert(await res.text());
+    } catch {
+      alert("Emergency service failed");
+    }
 
-    } catch (err) {
-      console.error("Backend error:", err);
-      alert("Failed to contact emergency service");
+    trackedPath = [];
+    startTracking();
+  });
+
+  /* ===== CHILD HELP BUTTON ===== */
+  document.getElementById("childHelpBtn").addEventListener("click", async () => {
+    stopTracking();
+
+    if (trackedPath.length === 0) {
+      alert("Location missing");
+      return;
+    }
+
+    const last = trackedPath[trackedPath.length - 1];
+
+    try {
+      const res = await fetch(CHILD_HELP_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(last)
+      });
+
+      alert(await res.text());
+    } catch {
+      alert("Child help service failed");
     }
 
     trackedPath = [];
@@ -133,7 +138,9 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
+
  
+
 
 
 
