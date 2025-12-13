@@ -29,21 +29,52 @@
       margin-bottom: 30px;
       color: #ccc;
     }
+    /* Button container */
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  margin-top: 40px;
+}
 
-    #unsafeBtn {
-      background-color: #e53935;
-      color: white;
-      padding: 15px 30px;
-      border: none;
-      border-radius: 10px;
-      font-size: 18px;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
+/* Unsafe Button */
+.unsafe-btn {
+  background-color: #e53935;
+  color: white;
+  font-size: 22px;
+  font-weight: bold;
+  padding: 18px 50px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(229, 57, 53, 0.6);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
 
-    #unsafeBtn:hover {
-      background-color: #c62828;
-    }
+.unsafe-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 10px 30px rgba(229, 57, 53, 0.8);
+}
+
+/* Child Help Button */
+.child-btn {
+  background-color: #f6ed46;
+  color: #000;
+  font-size: 20px;
+  font-weight: bold;
+  padding: 10px 28px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(255, 179, 0, 0.6);
+  transition: transform 0.2s ease;
+}
+
+.child-btn:hover {
+  transform: scale(1.05);
+}
+
 
     #status {
       margin-top: 20px;
@@ -55,9 +86,13 @@
 <body>
 
   <h1>🚨 Women Safety Dashboard</h1>
-  <p>Click the Unsafe button if you're in danger</p>
+  <p>Click the Unsafe Button We are with you</p>
 
-  <button id="unsafeBtn">Unsafe</button>
+  <div class="action-buttons">
+  <button id="unsafeBtn" class="unsafe-btn">Unsafe</button>
+  <button id="childHelpBtn" class="child-btn">🧒 Child Help</button>
+</div>
+
   <div id="status"></div>
 
   <!-- Register the Service Worker -->
@@ -77,6 +112,10 @@
 
 </body>
 </html>
+
+
+
+
 
 
 
