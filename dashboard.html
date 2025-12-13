@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -20,6 +20,16 @@
       margin: 0;
       text-align: center;
     }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    p {
+      margin-bottom: 30px;
+      color: #ccc;
+    }
+
     #unsafeBtn {
       background-color: #e53935;
       color: white;
@@ -28,6 +38,17 @@
       border-radius: 10px;
       font-size: 18px;
       cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    #unsafeBtn:hover {
+      background-color: #c62828;
+    }
+
+    #status {
+      margin-top: 20px;
+      font-size: 14px;
+      color: yellow;
     }
   </style>
 </head>
@@ -42,17 +63,24 @@
   <!-- Register the Service Worker -->
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("service-worker.js");
+      window.addEventListener("load", function () {
+        navigator.serviceWorker
+          .register("service-worker.js")
+          .then((reg) => console.log("✅ Service Worker Registered:", reg.scope))
+          .catch((err) => console.error("❌ Service Worker Error:", err));
+      });
     }
   </script>
 
-  <!-- Load ONLY location script -->
+  <!-- Location Tracking & Twilio Trigger -->
   <script type="module" src="./unsafe.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
- 
 
 </body>
 </html>
+
+
+
+
 
 
 
